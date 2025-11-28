@@ -3,7 +3,7 @@
     public class CreatePaymentDto
     {
         public int LeaseID { get; set; }
-        public int AccountantID { get; set; }  // Link to the accountant
+        public int AccountantID { get; set; }
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
 

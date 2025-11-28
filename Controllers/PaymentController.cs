@@ -15,7 +15,7 @@ public class PaymentController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Payment
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PaymentDto>>> GetPayments()
     {
@@ -76,7 +76,7 @@ public class PaymentController : ControllerBase
         return Ok(payments);
     }
 
-    // GET: api/Payment/5
+
     [HttpGet("{id}")]
     public async Task<ActionResult<PaymentDto>> GetPayment(int id)
     {
@@ -139,7 +139,7 @@ public class PaymentController : ControllerBase
         return Ok(payment);
     }
 
-    // POST: api/Payment
+ 
     [HttpPost]
     public async Task<ActionResult<Payment>> CreatePayment(CreatePaymentDto dto)
     {
@@ -159,7 +159,7 @@ public class PaymentController : ControllerBase
         return CreatedAtAction(nameof(GetPayment), new { id = payment.PaymentID }, payment);
     }
 
-    // PUT: api/Payment/5
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdatePayment(int id, CreatePaymentDto dto)
     {
@@ -179,7 +179,6 @@ public class PaymentController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Payment/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePayment(int id)
     {

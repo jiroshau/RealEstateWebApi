@@ -131,13 +131,13 @@ public class LeaseController : ControllerBase
 
 
     [HttpPost]
-    public async Task<ActionResult<LeaseDto>> CreateLease(LeaseDto dto)
+    public async Task<ActionResult<LeaseDto>> CreateLease(CreateLeaseDto dto)
     {
         var lease = new Lease
         {
-            PropertyID = dto.Property.PropertyID,
-            TenantID = dto.Tenant.TenantID,
-            AgentID = dto.Property.AgentID,
+            PropertyID = dto.PropertyID,
+            TenantID = dto.TenantID,
+            AgentID = dto.AgentID,
             MonthlyRent = dto.MonthlyRent,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
@@ -147,20 +147,72 @@ public class LeaseController : ControllerBase
         _context.Leases.Add(lease);
         await _context.SaveChangesAsync();
 
-        dto.LeaseID = lease.LeaseID;
-        return CreatedAtAction(nameof(GetLease), new { id = lease.LeaseID }, dto);
+        var leaseDto = new LeaseDto
+        {
+            LeaseID = lease.LeaseID,
+            Property = await _context.properties
+                .Include(p => p.Agent)
+                .Where(p => p.PropertyID == lease.PropertyID)
+                .Select(p => new PropertyDto
+                {
+                    PropertyID = p.PropertyID,
+                    PropertyName = p.PropertyName,
+                    Address = p.Address,
+                    Type = p.Type,
+                    MonthlyRent = p.MonthlyRent,
+                    Status = p.Status,
+                    Description = p.Description,
+                    LandlordID = p.LandlordID,
+                    AgentID = p.AgentID,
+                    Agent = p.Agent != null ? new AgentDto
+                    {
+                        AgentID = p.Agent.AgentID,
+                        Name = p.Agent.Name,
+                        Phone = p.Agent.Phone,
+                        Address = p.Agent.Address,
+                        Username = p.Agent.User.Username
+                    } : null
+                }).FirstOrDefaultAsync(),
+            Tenant = await _context.tenants
+                .Where(t => t.TenantID == lease.TenantID)
+                .Select(t => new TenantDto
+                {
+                    TenantID = t.TenantID,
+                    Name = t.Name,
+                    Phone = t.Phone,
+                    Address = t.Address
+                }).FirstOrDefaultAsync(),
+            Agent = lease.AgentID != null ? await _context.agents
+                .Include(a => a.User)
+                .Where(a => a.AgentID == lease.AgentID)
+                .Select(a => new AgentDto
+                {
+                    AgentID = a.AgentID,
+                    Name = a.Name,
+                    Phone = a.Phone,
+                    Address = a.Address,
+                    Username = a.User.Username
+                }).FirstOrDefaultAsync() : null,
+            MonthlyRent = lease.MonthlyRent,
+            StartDate = lease.StartDate,
+            EndDate = lease.EndDate,
+            Status = lease.Status
+        };
+
+        return CreatedAtAction(nameof(GetLease), new { id = lease.LeaseID }, leaseDto);
     }
 
 
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateLease(int id, LeaseDto dto)
+    public async Task<IActionResult> UpdateLease(int id, CreateLeaseDto dto)
     {
         var lease = await _context.Leases.FindAsync(id);
         if (lease == null) return NotFound();
 
-        lease.PropertyID = dto.Property.PropertyID;
-        lease.TenantID = dto.Tenant.TenantID;
-        lease.AgentID = dto.Property.AgentID;
+        lease.PropertyID = dto.PropertyID;
+        lease.TenantID = dto.TenantID;
+        lease.AgentID = dto.AgentID;
         lease.MonthlyRent = dto.MonthlyRent;
         lease.StartDate = dto.StartDate;
         lease.EndDate = dto.EndDate;
@@ -172,7 +224,6 @@ public class LeaseController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/Lease/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLease(int id)
     {

@@ -17,7 +17,7 @@ namespace RealEstateWebApi.Models
         public Tenant Tenant { get; set; } = null!;
 
         public int? AgentID { get; set; }
-        public Agent Agent { get; set; } = null!;
+        public Agent? Agent { get; set; } = null!;
 
         
         public decimal MonthlyRent { get; set; }

@@ -68,9 +68,14 @@ public class AccountantController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<AccountantDto>> CreateAccountant(CreateAccountantDto dto)
     {
+        var user = await _context.users.FindAsync(dto.UserID);
+        if (user == null)
+            return BadRequest("User does not exist.");
+
         var accountant = new Accountant
         {
             UserID = dto.UserID,
+            User = user,          // <-- set navigation property
             Name = dto.Name,
             Phone = dto.Phone,
             Address = dto.Address
@@ -85,12 +90,15 @@ public class AccountantController : ControllerBase
             Name = accountant.Name,
             Phone = accountant.Phone,
             Address = accountant.Address,
-            Username = accountant.User.Username,
-            Email = accountant.User.Email
+            Username = user.Username,
+            Email = user.Email
         };
 
         return CreatedAtAction(nameof(GetAccountant), new { id = accountant.AccountantID }, accountantDto);
     }
+
+
+
 
 
     [HttpPut("{id}")]

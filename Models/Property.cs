@@ -10,7 +10,7 @@ namespace RealEstateWebApi.Models
 
 
         public int? LandlordID { get; set; }
-        public Landlord Landlord { get; set; } = null!;
+        public Landlord? Landlord { get; set; } = null!;
 
         public int? AgentID { get; set; }
         public Agent? Agent { get; set; }

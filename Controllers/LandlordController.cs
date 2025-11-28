@@ -80,21 +80,43 @@ public class LandlordController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<LandlordDto>> CreateLandlord(Landlord dto)
+    public async Task<ActionResult<LandlordDto>> CreateLandlord(CreateLandlordDto dto)
     {
-        _context.landlords.Add(dto);
+        var latestUser = await _context.users
+            .OrderByDescending(u => u.UserID)
+            .FirstOrDefaultAsync();
+
+        if (latestUser == null)
+            return BadRequest("No available user to assign.");
+
+        var landlord = new Landlord
+        {
+            UserID = latestUser.UserID,
+            Name = dto.Name,
+            Phone = dto.Phone,
+            Address = dto.Address
+        };
+
+        _context.landlords.Add(landlord);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetLandlord), new { id = dto.LandlordID }, dto);
+
+        return CreatedAtAction(nameof(GetLandlord), new { id = landlord.LandlordID }, landlord);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateLandlord(int id, Landlord dto)
+    public async Task<IActionResult> UpdateLandlord(int id, CreateLandlordDto dto)
     {
-        if (id != dto.LandlordID) return BadRequest();
-        _context.Entry(dto).State = EntityState.Modified;
+        var landlord = await _context.landlords.FindAsync(id);
+        if (landlord == null) return NotFound();
+
+        landlord.Name = dto.Name;
+        landlord.Phone = dto.Phone;
+        landlord.Address = dto.Address;
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteLandlord(int id)

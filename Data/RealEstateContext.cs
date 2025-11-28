@@ -53,12 +53,13 @@ namespace RealEstateWebApi.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Accountant>()
-                .HasOne(ac => ac.User)
-                .WithMany(u => u.Accountants)
-                .HasForeignKey(ac => ac.UserID)
-                .OnDelete(DeleteBehavior.Cascade);
+    .HasMany(a => a.Payments)
+    .WithOne(p => p.Accountant)
+    .HasForeignKey(p => p.AccountantID)
+    .OnDelete(DeleteBehavior.SetNull);
 
- 
+
+
             modelBuilder.Entity<Lease>()
                 .HasOne(l => l.Tenant)
                 .WithMany(t => t.Leases)

@@ -19,6 +19,8 @@ public class PropertyController : ControllerBase
     public async Task<ActionResult<IEnumerable<PropertyDto>>> GetProperties()
     {
         var properties = await _context.properties
+            .Include(p => p.Landlord)
+            .Include(p => p.Agent)
             .Select(p => new PropertyDto
             {
                 PropertyID = p.PropertyID,
@@ -29,12 +31,25 @@ public class PropertyController : ControllerBase
                 Status = p.Status,
                 Description = p.Description,
                 LandlordID = p.LandlordID,
-                AgentID = p.AgentID
-            })
-            .ToListAsync();
+                AgentID = p.AgentID,
+                Landlord = p.Landlord == null ? null : new LandlordDto
+                {
+                    LandlordID = p.Landlord.LandlordID,
+                    Name = p.Landlord.Name,
+                    Phone = p.Landlord.Phone,
+                    Address = p.Landlord.Address
+                },
+                Agent = p.Agent == null ? null : new AgentDto
+                {
+                    AgentID = p.Agent.AgentID,
+                    Name = p.Agent.Name,
+                    Phone = p.Agent.Phone
+                }
+            }).ToListAsync();
 
         return Ok(properties);
     }
+
 
 
     [HttpGet("{id}")]
@@ -96,9 +111,8 @@ public async Task<ActionResult<PropertyDto>> CreateProperty(CreatePropertyDto dt
 }
 
 
-
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProperty(int id, PropertyDto dto)
+    public async Task<IActionResult> UpdateProperty(int id, CreatePropertyDto dto)
     {
         var property = await _context.properties.FindAsync(id);
         if (property == null) return NotFound();
